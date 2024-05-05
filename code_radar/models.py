@@ -17,3 +17,5 @@ class Scan(db.Model):
                            nullable=False)
     project = db.relationship('Project',
                               back_populates='scans')
+
+    ready = db.Column(db.Boolean, default=False)
