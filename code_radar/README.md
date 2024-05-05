@@ -1,0 +1,7 @@
+- Upload Zip File to the server
+- Server will unzip the file and store the contents in a temporary directory
+- Server will scan the contents of the directory
+- Server will store the results in the database
+- Server will delete the temporary directory
+- Server will return the results to the client
+- Client will display the results
