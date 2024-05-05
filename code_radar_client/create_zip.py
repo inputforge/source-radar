@@ -1,29 +1,42 @@
 import os
 import zipfile
+from pathlib import Path
 
-from pathspec import PathSpec
-from pathspec.patterns.gitwildmatch import GitWildMatchPattern
+from code_radar_client.gitignore import Matcher, load_gitignore
 
 # Create a zip of current directory excluding files in .gitignore recursively list all files in the directory
 # and create a zip file
 
-with open(".gitignore") as f:
-    spec_text = f.read()
-    # Create a PathSpec object from the .gitignore file
-    spec = PathSpec.from_lines(GitWildMatchPattern, ['.git/', *spec_text.splitlines()])
 
-def check_if_ignored(file: str):
-    return spec.match_file(file)
+vcs_dirs = {".git"}
+
+
+def _zip_dir(root: Path, directory: Path, archive: zipfile.ZipFile, matchers: list[Matcher]):
+    """
+    Recursively zip a directory, excluding files that match any of the patterns in the matchers list.
+    :param root: Root directory of the zip
+    :param directory: Current directory to zip
+    :param archive: Handle to the zip file
+    :param matchers: List of matchers to exclude files
+    :return: None
+    """
+    matcher = load_gitignore(directory)
+    matchers = matchers + [matcher]
+
+    for f in os.listdir(directory):
+        entry = directory / f
+        if os.path.isdir(entry):
+            if entry.name in vcs_dirs:
+                continue
+            if any(matcher.match_file(entry) for matcher in matchers):
+                continue
+
+            _zip_dir(root, entry, archive, matchers)
+        else:
+            if not any(matcher.match_file(entry) for matcher in matchers):
+                archive.write(entry, entry.relative_to(root))
 
 
 def create_zip(directory: str, zip_name: str):
     with zipfile.ZipFile(zip_name, mode="w") as archive:
-        for root, _, files in os.walk(directory):
-            for file in files:
-                path = os.path.join(root, file)
-                # Get the relative path of the file from the directory
-                relpath = os.path.relpath(path, directory)
-                # Check if the file should be ignored
-                if not check_if_ignored(relpath):
-                    print(f"Adding {relpath} to zip")
-                    archive.write(path, relpath)
+        _zip_dir(Path(directory), Path(directory), archive, [])
