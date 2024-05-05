@@ -7,18 +7,17 @@ from werkzeug.datastructures import FileStorage
 from code_radar.db import db
 from code_radar.models import Project, Scan
 
-api = Api()
-
-# request dto
-project_model = api.model('Project', {
-    'id': fields.Integer(readonly=True),
-    'name': fields.String(required=True)
-})
+api = Api(prefix='/api/v1', version='1.0', title='Code Radar API', doc="/api/v1/")
 
 scan_model = api.model('Scan', {
     'id': fields.Integer(readonly=True),
     'name': fields.String(required=True)
+})
 
+# request dto
+project_model = api.model('Project', {
+    'id': fields.Integer(readonly=True),
+    'name': fields.String(required=True),
 })
 
 
@@ -31,7 +30,7 @@ class ProjectResource(Resource):
         project = Project(name=api.payload['name'])
         db.session.add(project)
         db.session.commit()
-        return project, 201
+        return {project}, 201
 
     @api.marshal_with(project_model)
     def get(self):

@@ -1,0 +1,10 @@
+server = "http://localhost:5000"
+project_id = 1
+# List of directories to be analyzed, separated by path separator
+
+[sources]
+directories = [
+    "code_radar",
+    "code_radar_client",
+    "migrations",
+]
