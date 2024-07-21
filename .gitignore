@@ -5,7 +5,5 @@ venv/
 __pycache__/
 *.iml
 .idea
-uploads/**/*
-!uploads/.gitkeep
-scans/**/*
-!scans/.gitkeep
+server/uploads/
+server/scans/

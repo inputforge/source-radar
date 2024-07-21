@@ -1,0 +1,7 @@
+server = "http://localhost:5000"
+project = "source-radar"
+linters = ["ruff"]
+roots = [
+    "server",
+    "client",
+]

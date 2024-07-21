@@ -4,20 +4,20 @@ import zipfile
 from flask_restx import Resource, Api, fields
 from werkzeug.datastructures import FileStorage
 
-from code_radar.db import db
-from code_radar.models import Project, Scan
+from source_radar.db import db
+from source_radar.models import Project, Scan
 
-api = Api(prefix='/api/v1', version='1.0', title='Code Radar API', doc="/api/v1/")
+api = Api()
+
+# request dto
+project_model = api.model('Project', {
+    'id': fields.String(required=True),
+    'name': fields.String(required=True)
+})
 
 scan_model = api.model('Scan', {
     'id': fields.Integer(readonly=True),
     'name': fields.String(required=True)
-})
-
-# request dto
-project_model = api.model('Project', {
-    'id': fields.Integer(readonly=True),
-    'name': fields.String(required=True),
 })
 
 
@@ -27,10 +27,10 @@ class ProjectResource(Resource):
     @api.expect(project_model)
     @api.marshal_with(project_model)
     def post(self):
-        project = Project(name=api.payload['name'])
+        project = Project(id=api.payload['id'], name=api.payload['name'])
         db.session.add(project)
         db.session.commit()
-        return {project}, 201
+        return project, 201
 
     @api.marshal_with(project_model)
     def get(self):
@@ -38,12 +38,12 @@ class ProjectResource(Resource):
 
 
 # Resource for creating a Scan
-@api.route('/projects/<int:project_id>/scans')
+@api.route('/projects/<string:project_id>/scans')
 class ScanCreation(Resource):
     @api.marshal_with(scan_model)
     @api.expect(scan_model)
     def post(self, project_id):
-        project = Project.query.get_or_404(project_id)
+        project = Project.query.filter_by(id=project_id).first_or_404()
         new_scan = Scan(project=project, name=api.payload['name'])
         db.session.add(new_scan)
         db.session.commit()
@@ -69,11 +69,12 @@ SCAN_DIR = './scans'
 
 
 # api for uploading zip file
-@api.route('/projects/<int:project_id>/scans/<int:scan_id>/upload')
+@api.route('/projects/<string:project_id>/scans/<int:scan_id>/files')
 class ScanResultUpload(Resource):
     @api.expect(upload_parser)
     def post(self, project_id, scan_id):
-        scan = Scan.query.filter_by(project_id=project_id, id=scan_id).first_or_404()
+        project = Project.query.filter_by(id=project_id).first_or_404()
+        scan = Scan.query.filter_by(project=project, id=scan_id).first_or_404()
 
         args = upload_parser.parse_args()
         file = args['code']
@@ -91,4 +92,4 @@ class ScanResultUpload(Resource):
         scan.ready = True
         db.session.commit()
 
-        return {'message': 'File uploaded successfully'}, 202
+        return {'message': 'Files uploaded successfully'}, 202

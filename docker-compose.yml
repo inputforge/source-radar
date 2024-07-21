@@ -5,6 +5,6 @@ services:
     ports:
       - "5432:5432"
     environment:
-      POSTGRES_DB: code_radar
+      POSTGRES_DB: source_radar
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: pass123

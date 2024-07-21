@@ -2,11 +2,7 @@ import os
 import zipfile
 from pathlib import Path
 
-from code_radar_client.gitignore import Matcher, load_gitignore
-
-# Create a zip of current directory excluding files in .gitignore recursively list all files in the directory
-# and create a zip file
-
+from source_radar_client.gitignore import Matcher, load_gitignore
 
 vcs_dirs = {".git"}
 

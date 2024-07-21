@@ -1,9 +1,10 @@
-from code_radar.db import db
+from source_radar.db import db
 
 
 class Project(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(80), unique=True, nullable=False)
+    _id = db.Column(db.Integer, primary_key=True)
+    id = db.Column(db.String(255), primary_key=True)
+    name = db.Column(db.String, unique=True, nullable=False)
 
     scans = db.relationship('Scan',
                             back_populates='project')
